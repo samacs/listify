@@ -1,0 +1,68 @@
+version: '3'
+
+services:
+  api:
+    depends_on:
+      - postgres
+      - redis
+      - bundle
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/listify
+      - /bundle
+    env_file:
+      - .env
+    container_name: listify_api
+
+  bundle:
+    image: busybox
+    command: echo "Bundler cache ready..."
+    volumes:
+      - /bundle
+
+  postgres:
+    image: postgres:9.6-alpine
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    container_name: listify_postgres
+
+  redis:
+    image: redis:3.2.10-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+    container_name: listify_redis
+
+  sidekiq:
+    depends_on:
+      - postgres
+      - redis
+    build: .
+    command: bundle exec sidekiq -C config/sidekiq.yml.erb
+    volumes:
+      - .:/listify
+      - /bundle
+    env_file:
+      - .env
+    container_name: listify_sidekiq
+
+  cable:
+    depends_on:
+      - redis
+    build: .
+    command: bundle exec puma -p 4000 cable/config.ru
+    ports:
+      - 4000:4000
+    volumes:
+      - .:/listify
+      - /bundle
+    env_file:
+      - .env
+    container_name: listify_cable
+
+volumes:
+  redis:
+  postgres:
