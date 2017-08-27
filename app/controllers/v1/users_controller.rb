@@ -1,6 +1,7 @@
 module V1
   # Manages user creation and updates.
   class UsersController < ApplicationController
+    before_action :authenticate_request!, only: :update
     before_action :set_user
 
     after_action :send_activation_email

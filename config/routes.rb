@@ -3,9 +3,9 @@ Rails.application.routes.draw do
   concern :api do
     resources :users, except: %i[show destroy index]
 
-    scope :tokens, controller: :tokens do
-      post :create
-      match :destroy, via: %i[get delete]
+    scope :tokens, controller: :tokens, as: :tokens do
+      post '/', action: :create
+      match '/', action: :destroy, via: %i[delete get]
     end
   end
 
