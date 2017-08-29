@@ -1,19 +1,21 @@
 module V1
   # Manages user creation and updates.
   class UsersController < ApplicationController
-    before_action :authenticate_request!, only: :update
+    before_action :authenticate_request!, only: %i[update me]
     before_action :set_user
 
-    after_action :send_activation_email
+    after_action :send_activation_email, only: :create
+
+    def me
+      render current_user
+    end
 
     def create
       @user = User.new(user_params)
       if @user.save
         render @user
       else
-        render json: { error: @user.errors,
-                       status: 422 },
-               status: :unprocessable_entity
+        render_errors(@user.errors, :unprocessable_entity)
       end
     end
 
@@ -21,9 +23,7 @@ module V1
       if @user.update(user_params)
         render @user
       else
-        render json: { error: @user.errors,
-                       status: 422 },
-               status: :unprocessable_entity
+        render_errors(@user.errors, :unprocessable_entity)
       end
     end
 

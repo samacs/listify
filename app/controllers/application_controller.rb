@@ -1,32 +1,20 @@
 # Base application controller
 class ApplicationController < ActionController::API
   include MailingManagement
+  include AuthenticationManagement
+
+  rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
   protected
 
-  def current_user
-    @current_user ||= User.find_by(id: payload.first['user_id'])
+  def render_errors(errors, status = :server_error)
+    render json: { error: errors,
+                   status: Rack::Utils::SYMBOL_TO_STATUS_CODE[status] },
+           status: status
   end
+  alias render_error :render_errors
 
-  def authenticate_request!
-    return invalid_authentication if
-      !payload || !JsonWebToken.valid_payload(payload.first)
-
-    invalid_authentication unless current_user
-  end
-
-  def invalid_authentication
-    render json: { error: 'Invalid Request', status: 401 },
-           status: :unauthorized
-  end
-
-  private
-
-  def payload
-    authorization = request.headers['Authorization']
-    token = authorization.split(' ').last
-    JsonWebToken.decode(token)
-  rescue
-    nil
+  def record_not_found
+    render_error 'Not Found', :not_found
   end
 end

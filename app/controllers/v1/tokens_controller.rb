@@ -1,5 +1,6 @@
 module V1
   class TokensController < ApplicationController
+    before_action :authenticate_request!, only: :destroy
     before_action :set_token, only: :destroy
 
     def create

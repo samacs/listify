@@ -41,7 +41,7 @@ services:
       - postgres
       - redis
     build: .
-    command: bundle exec sidekiq -C config/sidekiq.yml.erb
+    command: bundle exec sidekiq -C config/sidekiq.yml
     volumes:
       - .:/listify
       - /bundle
@@ -53,7 +53,7 @@ services:
     depends_on:
       - redis
     build: .
-    command: bundle exec puma -p 4000 cable/config.ru
+    command: bundle exec puma -p 3000 cable/config.ru
     ports:
       - 4000:4000
     volumes:
